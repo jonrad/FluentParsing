@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentParsing", "FluentParsing\FluentParsing.csproj", "{E7104413-8E6E-40D3-83A0-FE0060C60564}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentParsing.Specs", "..\FluentParsing.Specs\FluentParsing.Specs.csproj", "{6EF47B12-65A6-44AF-B805-E711557810F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentParsing.Specs", "FluentParsing.Specs\FluentParsing.Specs.csproj", "{6EF47B12-65A6-44AF-B805-E711557810F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
