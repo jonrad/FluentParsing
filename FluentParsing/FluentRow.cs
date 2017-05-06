@@ -5,10 +5,16 @@ using System.Linq.Expressions;
 namespace FluentParsing
 {
     internal class FluentRow<T> : IFluentRow<T>
-        where T : new() // TODO remove shitty hack
     {
         // TODO make this immutable stop returning 'this'
         private readonly List<string> fields = new List<string>();
+
+        private readonly Func<T> ctor;
+
+        public FluentRow(Func<T> ctor)
+        {
+            this.ctor = ctor;
+        }
 
         public IFluentRow<T> WithField(string setterField)
         {
@@ -23,7 +29,7 @@ namespace FluentParsing
 
         public IExcelConfiguration<T> Build()
         {
-            return new ExcelConfiguration<T>(() => new T(), fields.ToArray());
+            return new ExcelConfiguration<T>(ctor, fields.ToArray());
         }
     }
 }

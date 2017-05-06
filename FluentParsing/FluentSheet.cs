@@ -1,3 +1,5 @@
+using System;
+
 namespace FluentParsing
 {
     internal class FluentSheet : IFluentSheet
@@ -10,9 +12,14 @@ namespace FluentParsing
         }
 
         public IFluentRow<T> ParseRows<T>()
-            where T : new() // TODO shitty hack
+            where T : new()
         {
-            return new FluentRow<T>();
+            return ParseRows(() => new T());
+        }
+
+        public IFluentRow<T> ParseRows<T>(Func<T> ctor)
+        {
+            return new FluentRow<T>(ctor);
         }
     }
 }
