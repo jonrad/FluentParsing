@@ -2,6 +2,7 @@
 {
     public interface IFluentSheet
     {
-        IFluentRow<T> ParseRows<T>();
+        IFluentRow<T> ParseRows<T>()
+            where T : new(); // TODO shitty hack
     }
 }

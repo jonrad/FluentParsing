@@ -50,6 +50,7 @@
     <Compile Include="FluentExcel.cs" />
     <Compile Include="FluentRow.cs" />
     <Compile Include="FluentSheet.cs" />
+    <Compile Include="IExcelConfiguration.cs" />
     <Compile Include="IFluentExcel.cs" />
     <Compile Include="IFluentRow.cs" />
     <Compile Include="IFluentSheet.cs" />

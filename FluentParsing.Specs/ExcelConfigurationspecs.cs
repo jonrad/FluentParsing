@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using Machine.Specifications;
@@ -8,7 +7,7 @@ namespace FluentParsing.Specs
 {
     class ExcelConfigurationSpecs
     {
-        static ExcelConfiguration<Sample> configuration;
+        static IExcelConfiguration<Sample> configuration;
 
         static ParseResults<Sample> results;
 
@@ -21,12 +20,12 @@ namespace FluentParsing.Specs
                 var assembly = Assembly.GetExecutingAssembly();
                 stream = assembly.GetManifestResourceStream("FluentParsing.Specs.Excel.Names.xlsx");
 
-                configuration = new ExcelConfiguration<Sample>(
-                    () => new Sample(), new[]
-                    {
-                        nameof(Sample.Name),
-                        nameof(Sample.Age)
-                    });
+                configuration = new FluentExcel()
+                    .ForSheet("dud")
+                    .ParseRows<Sample>()
+                        .WithField(nameof(Sample.Name))
+                        .WithField(nameof(Sample.Age))
+                    .Build();
             };
 
             Cleanup cleanup = () =>

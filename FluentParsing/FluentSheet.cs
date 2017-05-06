@@ -10,6 +10,7 @@ namespace FluentParsing
         }
 
         public IFluentRow<T> ParseRows<T>()
+            where T : new() // TODO shitty hack
         {
             return new FluentRow<T>();
         }

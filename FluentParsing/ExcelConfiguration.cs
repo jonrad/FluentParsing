@@ -6,11 +6,11 @@ using SpreadsheetLight;
 
 namespace FluentParsing
 {
-    internal class ExcelConfiguration<T>
+    internal class ExcelConfiguration<T> : IExcelConfiguration<T>
     {
         private readonly Func<T> ctor;
 
-        private FieldMapping[] mappings;
+        private readonly FieldMapping[] mappings;
 
         public ExcelConfiguration(Func<T> ctor, string[] fields)
         {
