@@ -6,7 +6,7 @@ namespace FluentParsing
     {
         public ParseResults<T> RunFor(string path)
         {
-            throw new NotImplementedException();
+            return new ParseResults<T>();
         }
     }
 }
