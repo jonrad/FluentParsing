@@ -40,6 +40,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExcelConfiguration.cs" />
+    <Compile Include="FluentExcel.cs" />
+    <Compile Include="FluentRow.cs" />
+    <Compile Include="FluentSheet.cs" />
+    <Compile Include="IFluentExcel.cs" />
+    <Compile Include="IFluentRow.cs" />
+    <Compile Include="IFluentSheet.cs" />
     <Compile Include="ParseResults.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
