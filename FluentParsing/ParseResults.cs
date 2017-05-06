@@ -4,17 +4,17 @@ namespace FluentParsing
 {
     public class ParseResults<T>
     {
-        public ParseResults()
+        private readonly T[] items;
+
+        public ParseResults(T[] items)
         {
-            Items = new T[0];
-            Count = 0;
-            Successful = true;
+            this.items = items;
         }
 
-        public bool Successful { get; }
+        public bool Successful => true;
 
-        public int Count { get; }
+        public int Count => items.Length;
 
-        public IEnumerable<T> Items { get; }
+        public IEnumerable<T> Items => items;
     }
 }
