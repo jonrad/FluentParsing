@@ -22,21 +22,21 @@ namespace FluentParsing
         {
             var excel = new SLDocument(stream);
 
-            var items = ParseWhile(excel, (e, row) => e.HasCellValue(row, 0)).ToArray();
+            var items = ParseWhile(excel, (e, row) => e.HasCellValue(row, 1)).ToArray();
 
             return new ParseResults<T>(items);
         }
 
         private IEnumerable<T> ParseWhile(SLDocument excel, Func<SLDocument, int, bool> predicate)
         {
-            var row = 0;
+            var row = 1;
             while (predicate(excel, row))
             {
                 var item = ctor();
 
                 for (var column = 0; column < mappings.Length; column++)
                 {
-                    var value = excel.GetCellValueAsString(row, column);
+                    var value = excel.GetCellValueAsString(row, column + 1);
 
                     mappings[column].Map(item, value);
                 }

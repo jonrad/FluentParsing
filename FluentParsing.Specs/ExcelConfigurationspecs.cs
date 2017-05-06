@@ -46,7 +46,7 @@ namespace FluentParsing.Specs
                 var item1 = results.Items.First();
 
                 item1.Name.ShouldEqual("Jon");
-                item1.Age.ShouldEqual(25);
+                item1.Age.ShouldEqual(20);
             };
 
             It returned_proper_second_result = () =>
@@ -54,7 +54,7 @@ namespace FluentParsing.Specs
                 var item2 = results.Items.Skip(1).First();
 
                 item2.Name.ShouldEqual("Mike");
-                item2.Age.ShouldEqual(20);
+                item2.Age.ShouldEqual(25);
             };
         }
 
