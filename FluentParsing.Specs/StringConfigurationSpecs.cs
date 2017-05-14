@@ -98,23 +98,29 @@ namespace FluentParsing.Specs
             return new StringConfiguration<T>(fields).Parse;
         }
 
-        public static Func<string, Result<T, TNext>> Create<T, TNext>(string[] fields, string[] fields2) 
+        public static Func<string, Result<T>> CreateResult<T>(string[] fields) where T : new()
+        {
+            var config = new StringConfiguration<T>(fields);
+            return s => new Result<T>(config.Parse(s));
+        }
+
+        public static Func<string, Result<T, Result<TNext>>> Create<T, TNext>(string[] fields, string[] fields2) 
             where T : new()
             where TNext : new()
         {
-            return new StringConfiguration<T, TNext>(Create<T>(fields), Create<TNext>(fields2)).Parse;
+            return new StringConfiguration<T, Result<TNext>>(Create<T>(fields), CreateResult<TNext>(fields2)).Parse;
         }
 
         class more_complicated
         {
-            static Result<Person, Dog> result;
+            static Result<Person, Result<Dog>> result;
 
-            static StringConfiguration<Person, Dog> subject;
+            static StringConfiguration<Person, Result<Dog>> subject;
 
             Establish context = () =>
-                subject = new StringConfiguration<Person, Dog>(
+                subject = new StringConfiguration<Person, Result<Dog>>(
                     Create<Person>(new[] { nameof(Person.Name), nameof(Person.Age) }),
-                    Create<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) }));
+                    CreateResult<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) }));
 
             Because of = () =>
                 result = subject.Parse($"Jon,25{Environment.NewLine}Janie,Shiba");
@@ -126,20 +132,20 @@ namespace FluentParsing.Specs
                 result.Item.Age.ShouldEqual(25);
 
             It returned_expected_dog_name = () =>
-                result.Next.Name.ShouldEqual("Janie");
+                result.Next.Item.Name.ShouldEqual("Janie");
 
             It returned_expected_dog_breed = () =>
-                result.Next.Breed.ShouldEqual("Shiba");
+                result.Next.Item.Breed.ShouldEqual("Shiba");
         }
 
         class most_complicated
         {
-            static Result<Person, Result<Dog, Horse>> result;
+            static Result<Person, Result<Dog, Result<Horse>>> result;
 
-            static StringConfiguration<Person, Result<Dog, Horse>> subject;
+            static StringConfiguration<Person, Result<Dog, Result<Horse>>> subject;
 
             Establish context = () =>
-                subject = new StringConfiguration<Person, Result<Dog, Horse>>(
+                subject = new StringConfiguration<Person, Result<Dog, Result<Horse>>>(
                     Create<Person>(new[] { nameof(Person.Name), nameof(Person.Age) }),
                     Create<Dog, Horse>(
                         new[] { nameof(Dog.Name), nameof(Dog.Breed) },
@@ -161,10 +167,10 @@ namespace FluentParsing.Specs
                 result.Next.Item.Breed.ShouldEqual("Shiba");
 
             It returned_expected_horse_name = () =>
-                result.Next.Next.Name.ShouldEqual("Wilber");
+                result.Next.Next.Item.Name.ShouldEqual("Wilber");
 
             It returned_expected_horse_speed = () =>
-                result.Next.Next.Speed.ShouldEqual(15);
+                result.Next.Next.Item.Speed.ShouldEqual(15);
         }
 
         public class Person
