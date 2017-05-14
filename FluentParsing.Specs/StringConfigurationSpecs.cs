@@ -1,90 +1,22 @@
 using System;
-using System.Linq;
+using FluentParsing.Specs.Domain;
 using Machine.Specifications;
 
 namespace FluentParsing.Specs
 {
-    public class Result<T>
-    {
-        public Result(T item)
-        {
-            Item = item;
-        }
-
-        public T Item { get; }
-    }
-
-    public class Result<T, TNext>
-        : Result<T>
-    {
-        public Result(T item, TNext next)
-            : base(item)
-        {
-            Next = next;
-        }
-
-        public TNext Next { get; }
-    }
-
-    public class StringConfiguration<T, TNext> 
-    {
-        private readonly Func<string, T> createT;
-
-        private readonly Func<string, TNext> createNext;
-
-        public StringConfiguration(Func<string, T> createT, Func<string, TNext> createNext)
-        {
-            this.createT = createT;
-            this.createNext = createNext;
-        }
-
-        public Result<T, TNext> Parse(string text)
-        {
-            var split = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            var nextLines = string.Join(Environment.NewLine, split.Skip(1));
-
-            return new Result<T, TNext>(createT(split[0]), createNext(nextLines));
-        }
-    }
-
-    public class StringConfiguration<T>
-        where T : new()
-    {
-        private readonly string[] fields;
-
-        public StringConfiguration(string[] fields)
-        {
-            this.fields = fields;
-        }
-
-        public virtual T Parse(string text)
-        {
-            var results = text.Split(',');
-            var item = new T();
-            var type = typeof(T);
-            for (var i = 0; i < fields.Length; i++)
-            {
-                var property = type.GetProperty(fields[i]);
-                property.SetValue(item, Convert.ChangeType(results[i], property.PropertyType));
-            }
-
-            return item;
-        }
-    }
-
     class StringConfigurationSpecs
     {
         class simple
         {
             private static Person result;
 
-            private static StringConfiguration<Person> subject;
+            private static StringConfiguration<Person> configuration;
 
             private Establish context = () =>
-                subject = new StringConfiguration<Person>(new[] { nameof(Person.Name), nameof(Person.Age) });
+                configuration = new StringConfiguration<Person>(new[] { nameof(Person.Name), nameof(Person.Age) });
 
             Because of = () =>
-                result = subject.Parse("Jon,25");
+                result = configuration.Parse("Jon,25");
 
             It returned_expected_name = () =>
                 result.Name.ShouldEqual("Jon");
@@ -115,15 +47,15 @@ namespace FluentParsing.Specs
         {
             static Result<Person, Result<Dog>> result;
 
-            static StringConfiguration<Person, Result<Dog>> subject;
+            static StringConfiguration<Person, Result<Dog>> configuration;
 
             Establish context = () =>
-                subject = new StringConfiguration<Person, Result<Dog>>(
+                configuration = new StringConfiguration<Person, Result<Dog>>(
                     Create<Person>(new[] { nameof(Person.Name), nameof(Person.Age) }),
                     CreateResult<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) }));
 
             Because of = () =>
-                result = subject.Parse($"Jon,25{Environment.NewLine}Janie,Shiba");
+                result = configuration.Parse($"Jon,25{Environment.NewLine}Janie,Shiba");
 
             It returned_expected_name = () =>
                 result.Item.Name.ShouldEqual("Jon");
@@ -142,17 +74,17 @@ namespace FluentParsing.Specs
         {
             static Result<Person, Result<Dog, Result<Horse>>> result;
 
-            static StringConfiguration<Person, Result<Dog, Result<Horse>>> subject;
+            static StringConfiguration<Person, Result<Dog, Result<Horse>>> configuration;
 
             Establish context = () =>
-                subject = new StringConfiguration<Person, Result<Dog, Result<Horse>>>(
+                configuration = new StringConfiguration<Person, Result<Dog, Result<Horse>>>(
                     Create<Person>(new[] { nameof(Person.Name), nameof(Person.Age) }),
                     Create<Dog, Horse>(
                         new[] { nameof(Dog.Name), nameof(Dog.Breed) },
                         new[] { nameof(Horse.Name), nameof(Horse.Speed) }));
 
             Because of = () =>
-                result = subject.Parse($"Jon,25{Environment.NewLine}Janie,Shiba{Environment.NewLine}Wilber,15");
+                result = configuration.Parse($"Jon,25{Environment.NewLine}Janie,Shiba{Environment.NewLine}Wilber,15");
 
             It returned_expected_name = () =>
                 result.Item.Name.ShouldEqual("Jon");
