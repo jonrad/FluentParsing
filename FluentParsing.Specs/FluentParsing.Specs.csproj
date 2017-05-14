@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="ExcelConfigurationSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringConfigurationSpecs.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Excel\Names.xls">
