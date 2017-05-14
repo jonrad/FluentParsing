@@ -8,11 +8,11 @@ namespace FluentParsing.Specs
     {
         class simple
         {
-            private static Person result;
+            static Person result;
 
-            private static StringConfiguration<Person> configuration;
+            static StringConfiguration<Person> configuration;
 
-            private Establish context = () =>
+            Establish context = () =>
                 configuration = new StringConfiguration<Person>(new[] { nameof(Person.Name), nameof(Person.Age) });
 
             Because of = () =>
@@ -25,18 +25,18 @@ namespace FluentParsing.Specs
                 result.Age.ShouldEqual(25);
         }
 
-        public static Func<string, T> Create<T>(string[] fields) where T : new()
+        static Func<string, T> Create<T>(string[] fields) where T : new()
         {
             return new StringConfiguration<T>(fields).Parse;
         }
 
-        public static Func<string, Result<T>> CreateResult<T>(string[] fields) where T : new()
+        static Func<string, Result<T>> CreateResult<T>(string[] fields) where T : new()
         {
             var config = new StringConfiguration<T>(fields);
             return s => new Result<T>(config.Parse(s));
         }
 
-        public static Func<string, Result<T, Result<TNext>>> Create<T, TNext>(string[] fields, string[] fields2) 
+        static Func<string, Result<T, Result<TNext>>> Create<T, TNext>(string[] fields, string[] fields2) 
             where T : new()
             where TNext : new()
         {
@@ -105,21 +105,21 @@ namespace FluentParsing.Specs
                 result.Next.Next.Item.Speed.ShouldEqual(15);
         }
 
-        public class Person
+        class Person
         {
             public string Name { get; set; }
 
             public int Age { get; set; }
         }
 
-        public class Dog
+        class Dog
         {
             public string Breed { get; set; }
 
             public string Name { get; set; }
         }
 
-        public class Horse
+        class Horse
         {
             public string Name { get; set; }
 
