@@ -6,24 +6,15 @@ namespace FluentParsing.Specs
     // MOVE ME
     namespace Domain
     {
-        public class Result<T>
+        public class Result<T, TNext>
         {
-            public Result(T item)
+            public Result(T item, TNext next)
             {
                 Item = item;
+                Next = next;
             }
 
             public T Item { get; }
-        }
-
-        public class Result<T, TNext>
-            : Result<T>
-        {
-            public Result(T item, TNext next)
-                : base(item)
-            {
-                Next = next;
-            }
 
             public TNext Next { get; }
         }
@@ -41,25 +32,65 @@ namespace FluentParsing.Specs
         {
             private readonly Func<StringConfiguration<T>> build;
 
-            private readonly Func<TNext> createNew;
+            private readonly Func<TNext> createNext;
 
             private readonly string[] nextFields;
 
-            public StringConfigurationBuilder(Func<StringConfiguration<T>> build, Func<TNext> createNew, string[] nextFields)
+            public StringConfigurationBuilder(Func<StringConfiguration<T>> build, Func<TNext> createNext, string[] nextFields)
             {
                 this.build = build;
-                this.createNew = createNew;
+                this.createNext = createNext;
                 this.nextFields = nextFields;
             }
 
-            public StringConfiguration<T, Result<TNext>> Build()
+            public StringConfiguration<T, TNext> Build()
             {
                 var child = build();
-                var next = new StringConfiguration<TNext>(createNew, nextFields);
+                var next = new StringConfiguration<TNext>(text =>
+                {
+                    var results = text.Read().Split(',');
+                    var item = createNext();
+                    var type = typeof(TNext);
+                    for (var i = 0; i < nextFields.Length; i++)
+                    {
+                        var property = type.GetProperty(nextFields[i]);
+                        property.SetValue(item, Convert.ChangeType(results[i], property.PropertyType));
+                    }
 
-                return new StringConfiguration<T, Result<TNext>>(
+                    return item;
+                });
+
+                return new StringConfiguration<T, TNext>(
                     child.Parse,
-                    s => new Result<TNext>(next.Parse(s)));
+                    s => next.Parse(s));
+            }
+
+            public StringConfigurationBuilder<Result<T, TNext>, TLast> Row<TLast>(string[] lastFields)
+                where TLast : new()
+            {
+                var child = build();
+                var next = new StringConfiguration<TNext>(text =>
+                {
+                    var results = text.Read().Split(',');
+                    var item = createNext();
+                    var type = typeof(TNext);
+                    for (var i = 0; i < nextFields.Length; i++)
+                    {
+                        var property = type.GetProperty(nextFields[i]);
+                        property.SetValue(item, Convert.ChangeType(results[i], property.PropertyType));
+                    }
+
+                    return item;
+                });
+
+                return new StringConfigurationBuilder<Result<T, TNext>, TLast>(
+                    () => new StringConfiguration<Result<T, TNext>>(s => new Result<T, TNext>(child.Parse(s), next.Parse(s))),
+                    () => new TLast(), 
+                    lastFields);
+
+
+                // FIX
+                return null;
             }
         }
 
@@ -77,7 +108,19 @@ namespace FluentParsing.Specs
 
             public StringConfiguration<T> Build()
             {
-                return new StringConfiguration<T>(createItem, fields);
+                return new StringConfiguration<T>(text =>
+                {
+                    var results = text.Read().Split(',');
+                    var item = createItem();
+                    var type = typeof(T);
+                    for (var i = 0; i < fields.Length; i++)
+                    {
+                        var property = type.GetProperty(fields[i]);
+                        property.SetValue(item, Convert.ChangeType(results[i], property.PropertyType));
+                    }
+
+                    return item;
+                });
             }
 
             public StringConfigurationBuilder<T, TNext> Row<TNext>(string[] nextFields)
@@ -90,41 +133,55 @@ namespace FluentParsing.Specs
             }
         }
 
+        //TODO MOVE
+    public class Context
+    {
+        public Context(string text)
+        {
+             Lines = text.Split(new [] { Environment.NewLine }, StringSplitOptions.None);
+        }
+
+        public string[] Lines { get; set; }
+
+        public int CurrentLine = 0;
+
+        public string Read()
+        {
+            return Lines[CurrentLine++];
+        }
+    }
+
         public class StringConfiguration<T, TNext>
         {
-            private readonly Func<string, T> createT;
+            private readonly Func<Context, T> createT;
 
-            private readonly Func<string, TNext> createNext;
+            private readonly Func<Context, TNext> createNext;
 
-            public StringConfiguration(Func<string, T> createT, Func<string, TNext> createNext)
+            public StringConfiguration(Func<Context, T> createT, Func<Context, TNext> createNext)
             {
                 this.createT = createT;
                 this.createNext = createNext;
             }
 
-            public Result<T, TNext> Parse(string text)
+            public Result<T, TNext> Parse(Context text)
             {
-                var split = text.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
-                var nextLines = string.Join(Environment.NewLine, split.Skip(1));
-
-                return new Result<T, TNext>(createT(split[0]), createNext(nextLines));
+                return new Result<T, TNext>(createT(text), createNext(text));
             }
         }
 
         public class StringConfiguration<T>
         {
-            private readonly Func<T> newItem;
+            private readonly Func<Context, T> parse;
 
-            private readonly string[] fields;
-
-            public StringConfiguration(Func<T> newItem, string[] fields)
+            public StringConfiguration(Func<Context, T> parse)
             {
-                this.newItem = newItem;
-                this.fields = fields;
+                this.parse = parse;
             }
 
-            public virtual T Parse(string text)
+            public virtual T Parse(Context text)
             {
+                return parse(text);
+                /*
                 var results = text.Split(',');
                 var item = newItem();
                 var type = typeof(T);
@@ -135,6 +192,7 @@ namespace FluentParsing.Specs
                 }
 
                 return item;
+                */
             }
         }
     }

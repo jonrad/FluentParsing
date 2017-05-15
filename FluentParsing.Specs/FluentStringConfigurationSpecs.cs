@@ -18,7 +18,7 @@ namespace FluentParsing.Specs
                     .Build();
 
             Because of = () =>
-                result = configuration.Parse("Jon,25");
+                result = configuration.Parse(new Context("Jon,25"));
 
             It returned_expected_name = () =>
                 result.Name.ShouldEqual("Jon");
@@ -29,9 +29,9 @@ namespace FluentParsing.Specs
 
         class more_complicated
         {
-            static Result<Person, Result<Dog>> result;
+            static Result<Person, Dog> result;
 
-            static StringConfiguration<Person, Result<Dog>> configuration;
+            static StringConfiguration<Person, Dog> configuration;
 
             Establish context = () =>
                 configuration = new StringConfiguration()
@@ -40,7 +40,7 @@ namespace FluentParsing.Specs
                     .Build();
 
             Because of = () =>
-                result = configuration.Parse($"Jon,25{Environment.NewLine}Janie,Shiba");
+                result = configuration.Parse(new Context($"Jon,25{Environment.NewLine}Janie,Shiba"));
 
             It returned_expected_name = () =>
                 result.Item.Name.ShouldEqual("Jon");
@@ -49,45 +49,45 @@ namespace FluentParsing.Specs
                 result.Item.Age.ShouldEqual(25);
 
             It returned_expected_dog_name = () =>
-                result.Next.Item.Name.ShouldEqual("Janie");
+                result.Next.Name.ShouldEqual("Janie");
 
             It returned_expected_dog_breed = () =>
-                result.Next.Item.Breed.ShouldEqual("Shiba");
+                result.Next.Breed.ShouldEqual("Shiba");
         }
 
-        class most_complicated
+        class most_complicated_xyz
         {
-            static Result<Person, Result<Dog, Result<Horse>>> result;
+            static Result<Result<Person, Dog>, Horse> result;
 
-            static StringConfiguration<Person, Result<Dog, Result<Horse>>> configuration;
+            static StringConfiguration<Result<Person, Dog>, Horse> configuration;
 
-            /*Establish context = () =>
+            Establish context = () =>
                 configuration = new StringConfiguration()
                     .Row<Person>(new[] { nameof(Person.Name), nameof(Person.Age) })
                     .Row<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) })
                     .Row<Horse>(new[] { nameof(Horse.Name), nameof(Horse.Speed) })
-                    .Build();*/
+                    .Build();
 
             Because of = () =>
-                result = configuration.Parse($"Jon,25{Environment.NewLine}Janie,Shiba{Environment.NewLine}Wilber,15");
+                result = configuration.Parse(new Context($"Jon,25{Environment.NewLine}Janie,Shiba{Environment.NewLine}Wilber,15"));
 
             It returned_expected_name = () =>
-                result.Item.Name.ShouldEqual("Jon");
+                result.Item.Item.Name.ShouldEqual("Jon");
 
             It returned_expected_age = () =>
-                result.Item.Age.ShouldEqual(25);
+                result.Item.Item.Age.ShouldEqual(25);
 
             It returned_expected_dog_name = () =>
-                result.Next.Item.Name.ShouldEqual("Janie");
+                result.Item.Next.Name.ShouldEqual("Janie");
 
             It returned_expected_dog_breed = () =>
-                result.Next.Item.Breed.ShouldEqual("Shiba");
+                result.Item.Next.Breed.ShouldEqual("Shiba");
 
             It returned_expected_horse_name = () =>
-                result.Next.Next.Item.Name.ShouldEqual("Wilber");
+                result.Next.Name.ShouldEqual("Wilber");
 
             It returned_expected_horse_speed = () =>
-                result.Next.Next.Item.Speed.ShouldEqual(15);
+                result.Next.Speed.ShouldEqual(15);
         }
 
         class Person
