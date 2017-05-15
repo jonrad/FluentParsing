@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 
 namespace FluentParsing.Specs
 {
-    // MOVE ME
     namespace Domain
     {
         public class Result<T, TNext>
@@ -28,7 +26,7 @@ namespace FluentParsing.Specs
 
             public string[] Lines { get; set; }
 
-            public int CurrentLine = 0;
+            public int CurrentLine;
 
             public string Read()
             {
