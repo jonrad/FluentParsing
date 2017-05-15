@@ -37,6 +37,31 @@ namespace FluentParsing.Specs
             }
         }
 
+        public class StringConfigurationBuilder<T, TNext>
+            where T : new()
+            where TNext : new()
+        {
+            private Func<StringConfiguration<T>> build;
+
+            private string[] nextFields;
+
+            public StringConfigurationBuilder(Func<StringConfiguration<T>> build, string[] nextFields)
+            {
+                this.build = build;
+                this.nextFields = nextFields;
+            }
+
+            public StringConfiguration<T, Result<TNext>> Build()
+            {
+                var child = build();
+                var next = new StringConfiguration<TNext>(nextFields);
+
+                return new StringConfiguration<T, Result<TNext>>(
+                    child.Parse,
+                    s => new Result<TNext>(next.Parse(s)));
+            }
+        }
+
         public class StringConfigurationBuilder<T>
             where T : new()
         {
@@ -50,6 +75,14 @@ namespace FluentParsing.Specs
             public StringConfiguration<T> Build()
             {
                 return new StringConfiguration<T>(fields);
+            }
+
+            public StringConfigurationBuilder<T, TNext> Row<TNext>(string[] nextFields)
+                where TNext : new()
+            {
+                return new StringConfigurationBuilder<T, TNext>(
+                    this.Build,
+                    nextFields);
             }
         }
 

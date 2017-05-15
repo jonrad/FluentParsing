@@ -6,6 +6,24 @@ namespace FluentParsing.Specs
 {
     class StringConfigurationSpecs
     {
+        static Func<string, T> Create<T>(string[] fields) where T : new()
+        {
+            return new StringConfiguration<T>(fields).Parse;
+        }
+
+        static Func<string, Result<T>> CreateResult<T>(string[] fields) where T : new()
+        {
+            var config = new StringConfiguration<T>(fields);
+            return s => new Result<T>(config.Parse(s));
+        }
+
+        static Func<string, Result<T, Result<TNext>>> Create<T, TNext>(string[] fields, string[] fields2) 
+            where T : new()
+            where TNext : new()
+        {
+            return new StringConfiguration<T, Result<TNext>>(Create<T>(fields), CreateResult<TNext>(fields2)).Parse;
+        }
+
         class simple
         {
             static Person result;
@@ -23,24 +41,6 @@ namespace FluentParsing.Specs
 
             It returned_expected_age = () =>
                 result.Age.ShouldEqual(25);
-        }
-
-        static Func<string, T> Create<T>(string[] fields) where T : new()
-        {
-            return new StringConfiguration<T>(fields).Parse;
-        }
-
-        static Func<string, Result<T>> CreateResult<T>(string[] fields) where T : new()
-        {
-            var config = new StringConfiguration<T>(fields);
-            return s => new Result<T>(config.Parse(s));
-        }
-
-        static Func<string, Result<T, Result<TNext>>> Create<T, TNext>(string[] fields, string[] fields2) 
-            where T : new()
-            where TNext : new()
-        {
-            return new StringConfiguration<T, Result<TNext>>(Create<T>(fields), CreateResult<TNext>(fields2)).Parse;
         }
 
         class more_complicated
