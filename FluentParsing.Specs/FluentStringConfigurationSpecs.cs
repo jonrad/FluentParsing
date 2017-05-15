@@ -1,4 +1,5 @@
 using FluentParsing.Specs.Domain;
+using Machine.Specifications;
 
 namespace FluentParsing.Specs
 {
@@ -6,26 +7,40 @@ namespace FluentParsing.Specs
     {
         class simple
         {
-            private static Person result;
+            static Person result;
 
-            private static StringConfiguration<Person> configuration;
+            static StringConfiguration<Person> configuration;
+
+            Establish context = () =>
+                configuration = new StringConfiguration()
+                    .Row<Person>(new[] { nameof(Person.Name), nameof(Person.Age) })
+                    .Build();
+
+            Because of = () =>
+                result = configuration.Parse("Jon,25");
+
+            It returned_expected_name = () =>
+                result.Name.ShouldEqual("Jon");
+
+            It returned_expected_age = () =>
+                result.Age.ShouldEqual(25);
         }
 
-        public class Person
+        class Person
         {
             public string Name { get; set; }
 
             public int Age { get; set; }
         }
 
-        public class Dog
+        class Dog
         {
             public string Breed { get; set; }
 
             public string Name { get; set; }
         }
 
-        public class Horse
+        class Horse
         {
             public string Name { get; set; }
 

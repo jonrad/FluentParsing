@@ -28,6 +28,31 @@ namespace FluentParsing.Specs
             public TNext Next { get; }
         }
 
+        public class StringConfiguration
+        {
+            public StringConfigurationBuilder<T> Row<T>(string[] fields)
+                where T : new()
+            {
+                return new StringConfigurationBuilder<T>(fields);
+            }
+        }
+
+        public class StringConfigurationBuilder<T>
+            where T : new()
+        {
+            private readonly string[] fields;
+
+            public StringConfigurationBuilder(string[] fields)
+            {
+                this.fields = fields;
+            }
+
+            public StringConfiguration<T> Build()
+            {
+                return new StringConfiguration<T>(fields);
+            }
+        }
+
         public class StringConfiguration<T, TNext>
         {
             private readonly Func<string, T> createT;
