@@ -55,7 +55,7 @@ namespace FluentParsing.Specs
                 result.Next.Breed.ShouldEqual("Shiba");
         }
 
-        class most_complicated_xyz
+        class most_complicated
         {
             static Result<Result<Person, Dog>, Horse> result;
 

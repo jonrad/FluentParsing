@@ -7,23 +7,6 @@ namespace FluentParsing.Specs
 {
     class StringConfigurationSpecs
     {
-        static Func<Context, T> Create<T>(string[] fields) where T : new()
-        {
-            return text =>
-            {
-                var results = text.Lines[text.CurrentLine++].Split(',');
-                var item = new T();
-                var type = typeof(T);
-                for (var i = 0; i < fields.Length; i++)
-                {
-                    var property = type.GetProperty(fields[i]);
-                    property.SetValue(item, Convert.ChangeType(results[i], property.PropertyType));
-                }
-
-                return item;
-            }; 
-        }
-
         class simple
         {
             static Person result;
@@ -31,21 +14,7 @@ namespace FluentParsing.Specs
             static StringConfiguration<Person> configuration;
 
             private Establish context = () =>
-                configuration = new StringConfiguration<Person>(
-                    text =>
-                    {
-                        var fields = new[] {nameof(Person.Name), nameof(Person.Age)};
-                        var results = text.Read().Split(',');
-                        var item = new Person();
-                        var type = typeof(Person);
-                        for (var i = 0; i < fields.Length; i++)
-                        {
-                            var property = type.GetProperty(fields[i]);
-                            property.SetValue(item, Convert.ChangeType(results[i], property.PropertyType));
-                        }
-
-                        return item;
-                    }); 
+                configuration = new StringConfiguration<Person>(StringFixtures.Create<Person>(nameof(Person.Name), nameof(Person.Age)));
 
             Because of = () =>
                 result = configuration.Parse(new Context("Jon,25"));
@@ -57,7 +26,7 @@ namespace FluentParsing.Specs
                 result.Age.ShouldEqual(25);
         }
 
-        class more_complicated_config
+        class more_complicated
         {
             static Result<Person, Dog> result;
 
@@ -65,8 +34,8 @@ namespace FluentParsing.Specs
 
             Establish context = () =>
                 configuration = new StringConfiguration<Person, Dog>(
-                    Create<Person>(new[] { nameof(Person.Name), nameof(Person.Age) }),
-                    Create<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) }));
+                    StringFixtures.Create<Person>(new[] { nameof(Person.Name), nameof(Person.Age) }),
+                    StringFixtures.Create<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) }));
 
             Because of = () =>
                 result = configuration.Parse(new Context($"Jon,25{Environment.NewLine}Janie,Shiba"));
@@ -84,24 +53,24 @@ namespace FluentParsing.Specs
                 result.Next.Breed.ShouldEqual("Shiba");
         }
 
-        class most_complicated_config
+        class most_complicated
         {
             static Result<Result<Person, Dog>, Horse> result;
 
             static StringConfiguration<Result<Person, Dog>, Horse> configuration;
 
-            private Establish context = () =>
+            Establish context = () =>
                 configuration = new StringConfiguration<Result<Person, Dog>, Horse>(
                     s =>
                     {
-                        var person = Create<Person>(new[] {nameof(Person.Name), nameof(Person.Age)});
-                        var dog = Create<Dog>(new[] {nameof(Dog.Name), nameof(Dog.Breed)});
+                        var person = StringFixtures.Create<Person>(new[] {nameof(Person.Name), nameof(Person.Age)});
+                        var dog = StringFixtures.Create<Dog>(new[] {nameof(Dog.Name), nameof(Dog.Breed)});
 
                         return new Result<Person, Dog>(person(s), dog(s));
                     },
-                    Create<Horse>(new[] {nameof(Horse.Name), nameof(Horse.Speed) }));
+                    StringFixtures.Create<Horse>(new[] {nameof(Horse.Name), nameof(Horse.Speed) }));
 
-        Because of = () =>
+            Because of = () =>
                 result = configuration.Parse(new Context($"Jon,25{Environment.NewLine}Janie,Shiba{Environment.NewLine}Wilber,15"));
 
             It returned_expected_name = () =>
