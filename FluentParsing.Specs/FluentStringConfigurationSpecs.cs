@@ -55,6 +55,41 @@ namespace FluentParsing.Specs
                 result.Next.Item.Breed.ShouldEqual("Shiba");
         }
 
+        class most_complicated
+        {
+            static Result<Person, Result<Dog, Result<Horse>>> result;
+
+            static StringConfiguration<Person, Result<Dog, Result<Horse>>> configuration;
+
+            /*Establish context = () =>
+                configuration = new StringConfiguration()
+                    .Row<Person>(new[] { nameof(Person.Name), nameof(Person.Age) })
+                    .Row<Dog>(new[] { nameof(Dog.Name), nameof(Dog.Breed) })
+                    .Row<Horse>(new[] { nameof(Horse.Name), nameof(Horse.Speed) })
+                    .Build();*/
+
+            Because of = () =>
+                result = configuration.Parse($"Jon,25{Environment.NewLine}Janie,Shiba{Environment.NewLine}Wilber,15");
+
+            It returned_expected_name = () =>
+                result.Item.Name.ShouldEqual("Jon");
+
+            It returned_expected_age = () =>
+                result.Item.Age.ShouldEqual(25);
+
+            It returned_expected_dog_name = () =>
+                result.Next.Item.Name.ShouldEqual("Janie");
+
+            It returned_expected_dog_breed = () =>
+                result.Next.Item.Breed.ShouldEqual("Shiba");
+
+            It returned_expected_horse_name = () =>
+                result.Next.Next.Item.Name.ShouldEqual("Wilber");
+
+            It returned_expected_horse_speed = () =>
+                result.Next.Next.Item.Speed.ShouldEqual(15);
+        }
+
         class Person
         {
             public string Name { get; set; }

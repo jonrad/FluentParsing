@@ -8,12 +8,12 @@ namespace FluentParsing.Specs
     {
         static Func<string, T> Create<T>(string[] fields) where T : new()
         {
-            return new StringConfiguration<T>(fields).Parse;
+            return new StringConfiguration<T>(() => new T(), fields).Parse;
         }
 
         static Func<string, Result<T>> CreateResult<T>(string[] fields) where T : new()
         {
-            var config = new StringConfiguration<T>(fields);
+            var config = new StringConfiguration<T>(() => new T(), fields);
             return s => new Result<T>(config.Parse(s));
         }
 
@@ -31,7 +31,7 @@ namespace FluentParsing.Specs
             static StringConfiguration<Person> configuration;
 
             Establish context = () =>
-                configuration = new StringConfiguration<Person>(new[] { nameof(Person.Name), nameof(Person.Age) });
+                configuration = new StringConfiguration<Person>(() => new Person(), new[] { nameof(Person.Name), nameof(Person.Age) });
 
             Because of = () =>
                 result = configuration.Parse("Jon,25");

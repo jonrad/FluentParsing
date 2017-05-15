@@ -33,28 +33,29 @@ namespace FluentParsing.Specs
             public StringConfigurationBuilder<T> Row<T>(string[] fields)
                 where T : new()
             {
-                return new StringConfigurationBuilder<T>(fields);
+                return new StringConfigurationBuilder<T>(() => new T(), fields);
             }
         }
 
         public class StringConfigurationBuilder<T, TNext>
-            where T : new()
-            where TNext : new()
         {
-            private Func<StringConfiguration<T>> build;
+            private readonly Func<StringConfiguration<T>> build;
 
-            private string[] nextFields;
+            private readonly Func<TNext> createNew;
 
-            public StringConfigurationBuilder(Func<StringConfiguration<T>> build, string[] nextFields)
+            private readonly string[] nextFields;
+
+            public StringConfigurationBuilder(Func<StringConfiguration<T>> build, Func<TNext> createNew, string[] nextFields)
             {
                 this.build = build;
+                this.createNew = createNew;
                 this.nextFields = nextFields;
             }
 
             public StringConfiguration<T, Result<TNext>> Build()
             {
                 var child = build();
-                var next = new StringConfiguration<TNext>(nextFields);
+                var next = new StringConfiguration<TNext>(createNew, nextFields);
 
                 return new StringConfiguration<T, Result<TNext>>(
                     child.Parse,
@@ -63,25 +64,28 @@ namespace FluentParsing.Specs
         }
 
         public class StringConfigurationBuilder<T>
-            where T : new()
         {
+            private readonly Func<T> createItem;
+
             private readonly string[] fields;
 
-            public StringConfigurationBuilder(string[] fields)
+            public StringConfigurationBuilder(Func<T> createItem, string[] fields)
             {
+                this.createItem = createItem;
                 this.fields = fields;
             }
 
             public StringConfiguration<T> Build()
             {
-                return new StringConfiguration<T>(fields);
+                return new StringConfiguration<T>(createItem, fields);
             }
 
             public StringConfigurationBuilder<T, TNext> Row<TNext>(string[] nextFields)
                 where TNext : new()
             {
                 return new StringConfigurationBuilder<T, TNext>(
-                    this.Build,
+                    Build,
+                    () => new TNext(), 
                     nextFields);
             }
         }
@@ -108,19 +112,21 @@ namespace FluentParsing.Specs
         }
 
         public class StringConfiguration<T>
-            where T : new()
         {
+            private readonly Func<T> newItem;
+
             private readonly string[] fields;
 
-            public StringConfiguration(string[] fields)
+            public StringConfiguration(Func<T> newItem, string[] fields)
             {
+                this.newItem = newItem;
                 this.fields = fields;
             }
 
             public virtual T Parse(string text)
             {
                 var results = text.Split(',');
-                var item = new T();
+                var item = newItem();
                 var type = typeof(T);
                 for (var i = 0; i < fields.Length; i++)
                 {
